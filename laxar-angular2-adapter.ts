@@ -7,18 +7,79 @@ import 'reflect-metadata';
 import 'zone.js';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
-import { ChangeDetectorRef,  Component, ComponentFactoryResolver, Injector, NgModule, OpaqueToken, ViewChild, ViewContainerRef } from '@angular/core';
+import {
+   ApplicationRef,
+   ChangeDetectorRef,
+   Component,
+   ComponentFactoryResolver,
+   Injector,
+   NgModule,
+   ViewChild,
+   ViewContainerRef
+} from '@angular/core';
+
+export class AxEventBus {}
+
+let adapterCounter = 0;
 
 export const technology = 'angular2';
 
-export function bootstrap( { widgets, controls }, { artifactProvider }, applicationElement ) {
+export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat }, applicationElement ) {
+
+   // Implementation of this adapter is heavily inspired by these:
+   // - https://github.com/angular/angular/issues/9293#issuecomment-261329089
+   // - https://github.com/angular/material2/blob/master/src/lib/core/portal/dom-portal-host.ts
 
    const api = {
       create
    };
 
-   const incubatorElement = document.createElement( 'DIV' );
-   document.body.appendChild( incubatorElement );
+   let appComponent;
+   heartbeat.registerHeartbeatListener( () => {
+      if( appComponent ) {
+         appComponent.changeDetectorRef.detectChanges();
+      }
+   } );
+
+   const adapterAttribute = `data-ax-angular2-${adapterCounter++}`;
+   const adapterRootElement = document.createElement( 'DIV' );
+   adapterRootElement.setAttribute( adapterAttribute, '' );
+   adapterRootElement.style.display = 'none';
+   document.body.appendChild( adapterRootElement );
+
+   @Component( {
+      selector: `[${adapterAttribute}]`,
+      template: `<div #viewContainer></div>`
+   } )
+   class AppRootComponent {
+
+      @ViewChild('viewContainer', { read: ViewContainerRef })
+      public viewContainerRef: ViewContainerRef;
+
+      constructor(
+         public resolver: ComponentFactoryResolver,
+         public changeDetectorRef: ChangeDetectorRef,
+         public applicationRef: ApplicationRef
+      ) {
+         appComponent = this;
+      }
+
+   }
+
+   const modules = widgets
+      .map( widget => widget.module[ kebapToCamelcase( widget.descriptor.name ) + 'Module' ] );
+   const components = widgets
+      .map( widget => widget.module[ kebapToCamelcase( widget.descriptor.name ) ] );
+
+   @NgModule( {
+      imports: [ BrowserModule, ...modules ],
+      entryComponents: components,
+      declarations: [ AppRootComponent ],
+      bootstrap: [ AppRootComponent ]
+   } )
+   class AppRootModule {}
+
+   platformBrowserDynamic().bootstrapModule( AppRootModule );
 
    return api;
 
@@ -29,13 +90,7 @@ export function bootstrap( { widgets, controls }, { artifactProvider }, applicat
       const widgetId = services.axContext.widget.id;
       const provider = artifactProvider.forWidget( widgetName );
 
-      let AdapterComponent_;
-      let AdapterModule_;
-
-      let component;
-      let widgetContainer;
-      let changeDetector;
-
+      let componentRef;
 
       return Promise.all( [ provider.descriptor(), provider.module() ] )
          .then( setupWidget, err => { window.console.error( err ); } )
@@ -46,59 +101,29 @@ export function bootstrap( { widgets, controls }, { artifactProvider }, applicat
          } ) );
 
       function setupWidget( [ descriptor, module ] ) {
-         const componentName = kebapToCamelcase( descriptor.name );
-         const moduleName = `${componentName}Module`;
 
-         @Component( {
-            selector: `#${anchorElement.id}`,
-            template: `<div #widgetContainer></div>`,
-            entryComponents: [ module[ componentName ] ]
-         } )
-         class AdapterComponent {
-
-            @ViewChild('widgetContainer', { read: ViewContainerRef }) widgetContainer: ViewContainerRef;
-
-            constructor(private resolver: ComponentFactoryResolver,ref: ChangeDetectorRef) {
-               changeDetector = ref;
-            }
-
-            ngOnInit(): void {
-               widgetContainer = this.widgetContainer;
-               const parentInjector = this.widgetContainer.parentInjector;
-               class LocalInjector extends Injector {
-                  get( token: any, notFoundValue?: any ): any {
-                     if( token === AxEventBus ) {
-                        return services.axEventBus;
-                     }
-                     return parentInjector.get( token, notFoundValue );
-                  }
+         const parentInjector = appComponent.viewContainerRef.parentInjector;
+         class LocalInjector extends Injector {
+            get( token: any, notFoundValue?: any ): any {
+               if( token === AxEventBus ) {
+                  return services.axEventBus;
                }
-               const injector = new LocalInjector();
-               const factory = this.resolver.resolveComponentFactory( module[ componentName ] );
-               component = factory.create(injector);
-               console.log( 'gefactoried' );
+               return parentInjector.get( token, notFoundValue );
             }
          }
-         AdapterComponent_ = AdapterComponent;
 
-         @NgModule( {
-            imports: [ BrowserModule, module[ moduleName ] ],
-            declarations: [ AdapterComponent ],
-            bootstrap: [ AdapterComponent ]
-         } )
-         class AdapterModule {
-            constructor() {}
-         }
-         AdapterModule_ = AdapterModule;
-         incubatorElement.appendChild( anchorElement );
-         platformBrowserDynamic().bootstrapModule( AdapterModule_ );
+         const injector = new LocalInjector();
+         const componentName = kebapToCamelcase( descriptor.name );
+         const factory = appComponent.resolver.resolveComponentFactory( module[ componentName ] );
+         componentRef = appComponent.viewContainerRef
+            .createComponent( factory, appComponent.viewContainerRef.length, injector );
       }
 
       function domAttachTo( areaElement ) {
-         widgetContainer.insert( component.hostView );
-         incubatorElement.removeChild( anchorElement );
+         const widgetNode = componentRef.hostView.rootNodes[0];
+
+         anchorElement.appendChild( widgetNode );
          areaElement.appendChild( anchorElement );
-         changeDetector.detectChanges();
       }
 
       function domDetach() {
@@ -109,20 +134,17 @@ export function bootstrap( { widgets, controls }, { artifactProvider }, applicat
       }
 
       function destroy() {
-         console.log( 'destroying ' + widgetId );
-         AdapterComponent_ = null;
-      }
-
-      function kebapToCamelcase( str ) {
-         const SEGMENTS_MATCHER = /[-]./g;
-         return str.charAt( 0 ).toUpperCase() +
-            str.substr( 1 ).replace( SEGMENTS_MATCHER, _ => _.charAt( 1 ).toUpperCase() );
+         componentRef.destroy();
       }
 
    }
 
 }
 
-export class AxEventBus {
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function kebapToCamelcase( str ) {
+   const SEGMENTS_MATCHER = /[-]./g;
+   return str.charAt( 0 ).toUpperCase() +
+      str.substr( 1 ).replace( SEGMENTS_MATCHER, _ => _.charAt( 1 ).toUpperCase() );
 }
