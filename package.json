@@ -2,7 +2,7 @@
   "name": "laxar-angular2-adapter",
   "version": "0.1.0-pre",
   "description": "Write LaxarJS widgets and controls with AngularJS 2",
-  "main": "laxar-angular2-adapter.js",
+  "main": "laxar-angular2-adapter.ts",
   "scripts": { },
   "repository": {
     "type": "git",
