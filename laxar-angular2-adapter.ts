@@ -9,17 +9,21 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import {
    ApplicationRef,
-   ChangeDetectorRef,
    Component,
+   ComponentRef,
    ComponentFactoryResolver,
+   EmbeddedViewRef,
    Injector,
    NgModule,
+   NgZone,
    ViewChild,
    ViewContainerRef
 } from '@angular/core';
+import { AxEventBus } from 'laxar/types';
 
-export class AxEventBus {}
-
+const typesMap = new Map< any, string >();
+typesMap.set( AxEventBus, AxEventBus.name.toLowerCase() );
+console.log( typesMap );
 let adapterCounter = 0;
 
 export const technology = 'angular2';
@@ -34,18 +38,28 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       create
    };
 
-   let appComponent;
-   heartbeat.registerHeartbeatListener( () => {
-      if( appComponent ) {
-         appComponent.changeDetectorRef.detectChanges();
-      }
-   } );
-
    const adapterAttribute = `data-ax-angular2-${adapterCounter++}`;
    const adapterRootElement = document.createElement( 'DIV' );
    adapterRootElement.setAttribute( adapterAttribute, '' );
    adapterRootElement.style.display = 'none';
    document.body.appendChild( adapterRootElement );
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   class WidgetInjector implements Injector {
+
+      constructor( private parentInjector: Injector, private widgetServices: any) {};
+
+      get( token: any, notFoundValue?: any ): any {
+         if( token === AxEventBus ) {
+            return this.widgetServices.axEventBus;
+         }
+         return this.parentInjector.get( token, notFoundValue );
+      }
+
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    @Component( {
       selector: `[${adapterAttribute}]`,
@@ -54,14 +68,28 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
    class AppRootComponent {
 
       @ViewChild('viewContainer', { read: ViewContainerRef })
-      public viewContainerRef: ViewContainerRef;
+      private viewContainerRef: ViewContainerRef;
 
       constructor(
-         public resolver: ComponentFactoryResolver,
-         public changeDetectorRef: ChangeDetectorRef,
-         public applicationRef: ApplicationRef
+         private resolver: ComponentFactoryResolver,
+         private applicationRef: ApplicationRef,
+         private rootInjector: Injector,
+         private ngZone: NgZone
       ) {
-         appComponent = this;
+         heartbeat.registerHeartbeatListener( () => { this.applicationRef.tick(); } );
+      }
+
+      registerWidgetComponent( component: any, widgetServices: any ): ComponentRef< any > {
+         let componentRef;
+         this.ngZone.run( () => {
+            const injector = new WidgetInjector( this.rootInjector, widgetServices );
+            const factory = this.resolver.resolveComponentFactory( component );
+            componentRef = factory.create( injector );
+
+            this.applicationRef.attachView(componentRef.hostView);
+            componentRef.onDestroy( () => { this.applicationRef.detachView(componentRef.hostView); } );
+         } );
+         return componentRef;
       }
 
    }
@@ -77,9 +105,17 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       declarations: [ AppRootComponent ],
       bootstrap: [ AppRootComponent ]
    } )
-   class AppRootModule {}
+   class AppRootModule {
 
-   platformBrowserDynamic().bootstrapModule( AppRootModule );
+      constructor( private appRef: ApplicationRef ) {}
+
+      rootComponent(): AppRootComponent {
+         return this.appRef.components[0].instance;
+      }
+
+   }
+
+   const bootstrapPromise = platformBrowserDynamic().bootstrapModule( AppRootModule );
 
    return api;
 
@@ -92,7 +128,7 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
       let componentRef;
 
-      return Promise.all( [ provider.descriptor(), provider.module() ] )
+      return Promise.all( [ bootstrapPromise, provider.descriptor(), provider.module() ] )
          .then( setupWidget, err => { window.console.error( err ); } )
          .then( () => ( {
             domAttachTo,
@@ -100,23 +136,12 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
             destroy
          } ) );
 
-      function setupWidget( [ descriptor, module ] ) {
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-         const parentInjector = appComponent.viewContainerRef.parentInjector;
-         class LocalInjector extends Injector {
-            get( token: any, notFoundValue?: any ): any {
-               if( token === AxEventBus ) {
-                  return services.axEventBus;
-               }
-               return parentInjector.get( token, notFoundValue );
-            }
-         }
-
-         const injector = new LocalInjector();
+      function setupWidget( [ rootModuleInjector, descriptor, module ] ) {
          const componentName = kebapToCamelcase( descriptor.name );
-         const factory = appComponent.resolver.resolveComponentFactory( module[ componentName ] );
-         componentRef = appComponent.viewContainerRef
-            .createComponent( factory, appComponent.viewContainerRef.length, injector );
+         componentRef = rootModuleInjector.instance.rootComponent()
+            .registerWidgetComponent( module[ componentName ], services );
       }
 
       function domAttachTo( areaElement ) {
