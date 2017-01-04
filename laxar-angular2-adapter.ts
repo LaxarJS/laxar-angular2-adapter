@@ -19,7 +19,7 @@ import {
    ViewChild,
    ViewContainerRef
 } from '@angular/core';
-import { AxEventBus } from 'laxar/types';
+import { AxEventBus } from 'laxar-types';
 
 const typesMap = new Map< any, string >();
 typesMap.set( AxEventBus, AxEventBus.name.toLowerCase() );
