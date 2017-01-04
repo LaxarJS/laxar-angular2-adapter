@@ -12,7 +12,6 @@ import {
    Component,
    ComponentRef,
    ComponentFactoryResolver,
-   EmbeddedViewRef,
    Injector,
    NgModule,
    NgZone,
@@ -123,9 +122,7 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
    function create( { widgetName, anchorElement, services } ) {
 
-      const widgetId = services.axContext.widget.id;
       const provider = artifactProvider.forWidget( widgetName );
-
       let componentRef;
 
       return Promise.all( [ bootstrapPromise, provider.descriptor(), provider.module() ] )
