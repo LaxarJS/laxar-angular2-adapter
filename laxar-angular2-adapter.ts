@@ -18,11 +18,10 @@ import {
    ViewChild,
    ViewContainerRef
 } from '@angular/core';
-import { AxEventBus } from 'laxar-types';
+import { AxEventBus, AxAreaHelper, AxContext } from 'laxar-types';
+import { AxWidgetArea } from './lib/directives/widget_area';
 
-const typesMap = new Map< any, string >();
-typesMap.set( AxEventBus, AxEventBus.name.toLowerCase() );
-console.log( typesMap );
+
 let adapterCounter = 0;
 
 export const technology = 'angular2';
@@ -52,6 +51,12 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       get( token: any, notFoundValue?: any ): any {
          if( token === AxEventBus ) {
             return this.widgetServices.axEventBus;
+         }
+         if( token === AxAreaHelper ) {
+            return this.widgetServices.axAreaHelper;
+         }
+         if( token === AxContext ) {
+            return this.widgetServices.axContext;
          }
          return this.parentInjector.get( token, notFoundValue );
       }
@@ -170,3 +175,11 @@ function kebapToCamelcase( str ) {
    return str.charAt( 0 ).toUpperCase() +
       str.substr( 1 ).replace( SEGMENTS_MATCHER, _ => _.charAt( 1 ).toUpperCase() );
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@NgModule( {
+   declarations: [ AxWidgetArea ],
+   exports: [ AxWidgetArea ]
+} )
+export class AxAngularModule {}

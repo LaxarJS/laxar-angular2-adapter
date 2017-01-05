@@ -33,8 +33,6 @@ export class AxAreaHelper {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export class AxAssets extends Function {
-   // NEEDS FIX A: How to document the function nature of this class?
-
    url( name: string ): Promise<string> {
       return Promise.resolve( '' );
    }
@@ -57,7 +55,7 @@ export class AxConfiguration {
 
 export class AxContext {
    public eventBus: AxEventBus;
-   public features: AxFeatures;
+   public features: any;
    public id: Function;
    public log: AxLog;
    public widget: Object;
@@ -94,12 +92,6 @@ export class AxEventMeta {
 
 export class AxWidgetServices {
    axEventBus: AxEventBus
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-export class AxFeatures {
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,3 +206,8 @@ export class AxVisibility {
 
 export class AxGlobalLog extends AxLog {}
 export class AxGlobalEventBus extends AxEventBus {}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const injectionMap = new Map< Function, string >();
+injectionMap.set( AxEventBus, 'axEventBus' );
