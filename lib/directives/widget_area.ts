@@ -1,3 +1,8 @@
+/**
+ * Copyright 2017 aixigo AG
+ * Released under the MIT license.
+ * http://laxarjs.org/license
+ */
 import { Directive, ElementRef, Input, OnInit } from '@angular/core';
 import { AxAreaHelper } from 'laxar-types';
 

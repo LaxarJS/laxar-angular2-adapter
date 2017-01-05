@@ -1,12 +1,15 @@
 /**
- * Copyright 2016 aixigo AG
+ * Copyright 2017 aixigo AG
  * Released under the MIT license.
  * http://laxarjs.org/license
  */
 import 'reflect-metadata';
 import 'zone.js';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { BrowserModule } from '@angular/platform-browser';
+import {
+   BrowserModule,
+   __platform_browser_private__ as platformBrowserPrivateApi
+} from '@angular/platform-browser';
+import { ResourceLoader, platformCoreDynamic } from '@angular/compiler';
 import {
    ApplicationRef,
    Component,
@@ -15,12 +18,14 @@ import {
    Injector,
    NgModule,
    NgZone,
-   ViewChild,
-   ViewContainerRef
+   COMPILER_OPTIONS,
+   createPlatformFactory,
+   Provider
 } from '@angular/core';
 import { AxEventBus, AxAreaHelper, AxContext } from 'laxar-types';
 import { AxWidgetArea } from './lib/directives/widget_area';
-
+import { ThemeAwareResourceLoader } from './lib/theme_aware_resource_loader';
+import { WidgetInjector } from './lib/widget_injector';
 
 let adapterCounter = 0;
 
@@ -44,35 +49,11 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   class WidgetInjector implements Injector {
-
-      constructor( private parentInjector: Injector, private widgetServices: any) {};
-
-      get( token: any, notFoundValue?: any ): any {
-         if( token === AxEventBus ) {
-            return this.widgetServices.axEventBus;
-         }
-         if( token === AxAreaHelper ) {
-            return this.widgetServices.axAreaHelper;
-         }
-         if( token === AxContext ) {
-            return this.widgetServices.axContext;
-         }
-         return this.parentInjector.get( token, notFoundValue );
-      }
-
-   }
-
-   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    @Component( {
       selector: `[${adapterAttribute}]`,
-      template: `<div #viewContainer></div>`
+      template: `<div></div>`
    } )
    class AppRootComponent {
-
-      @ViewChild('viewContainer', { read: ViewContainerRef })
-      private viewContainerRef: ViewContainerRef;
 
       constructor(
          private resolver: ComponentFactoryResolver,
@@ -107,19 +88,18 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       imports: [ BrowserModule, ...modules ],
       entryComponents: components,
       declarations: [ AppRootComponent ],
-      bootstrap: [ AppRootComponent ]
+      bootstrap: [ AppRootComponent ],
+      providers: [{provide: ResourceLoader, useClass: class L extends ResourceLoader {}}]
    } )
    class AppRootModule {
-
-      constructor( private appRef: ApplicationRef ) {}
+      constructor( private applicationRef: ApplicationRef ) {}
 
       rootComponent(): AppRootComponent {
-         return this.appRef.components[0].instance;
+         return this.applicationRef.components[0].instance;
       }
-
    }
 
-   const bootstrapPromise = platformBrowserDynamic().bootstrapModule( AppRootModule );
+   const bootstrapPromise = createPlatformBrowserDynamic().bootstrapModule( AppRootModule );
 
    return api;
 
@@ -164,6 +144,22 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
          componentRef.destroy();
       }
 
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   function createPlatformBrowserDynamic() {
+      const resourceLoader = new ThemeAwareResourceLoader( artifactProvider );
+      const platformProviders: Provider[] = [
+         platformBrowserPrivateApi.INTERNAL_BROWSER_PLATFORM_PROVIDERS, {
+            provide: COMPILER_OPTIONS,
+            useValue: {
+               providers: [ { provide: ResourceLoader, useValue: resourceLoader } ]
+            },
+            multi: true
+         },
+      ];
+      return createPlatformFactory( platformCoreDynamic, 'browserDynamic', platformProviders )();
    }
 
 }

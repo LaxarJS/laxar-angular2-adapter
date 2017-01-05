@@ -1,3 +1,8 @@
+/**
+ * Copyright 2017 aixigo AG
+ * Released under the MIT license.
+ * http://laxarjs.org/license
+ */
 export class StorageApi {
    getItem( key: string ): any {}
    setItem( key: string, value: any ): void {}
@@ -206,8 +211,3 @@ export class AxVisibility {
 
 export class AxGlobalLog extends AxLog {}
 export class AxGlobalEventBus extends AxEventBus {}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-export const injectionMap = new Map< Function, string >();
-injectionMap.set( AxEventBus, 'axEventBus' );
