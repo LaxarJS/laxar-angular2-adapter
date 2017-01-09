@@ -30,7 +30,7 @@ function distConfig() {
    };
 
    config.externals = {
-      'laxar': 'laxar', // TODO How to list angular stuff?
+      'laxar': 'laxar',
       '@angular/compiler': '@angular/compiler',
       '@angular/core': '@angular/core',
       '@angular/platform-browser': '@angular/platform-browser'

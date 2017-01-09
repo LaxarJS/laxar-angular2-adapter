@@ -26,6 +26,11 @@ module.exports = function( grunt ) {
             options: {
                files: [ polyfillPath, 'spec/spec-runner.js' ]
             }
+         },
+         directives: {
+            options: {
+               files: [ polyfillPath, 'lib/directives/spec/spec-runner.js' ]
+            }
          }
       }
    } );
