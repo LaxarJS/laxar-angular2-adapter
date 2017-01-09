@@ -9,7 +9,7 @@ import { AxAreaHelper } from 'laxar-types';
 @Directive( {
    selector: '[axWidgetArea]'
 } )
-export class AxWidgetArea {
+export class AxWidgetArea implements OnInit {
 
    @Input() axWidgetArea: string;
 

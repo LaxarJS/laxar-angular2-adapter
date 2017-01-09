@@ -7,7 +7,13 @@ import { Injector } from '@angular/core';
 
 export class WidgetInjector implements Injector {
 
-   constructor( private parentInjector: Injector, private widgetServices: any) {};
+   constructor(
+      private parentInjector: Injector,
+      private widgetServices: any,
+      private additionalServices: any[] = []
+   ) {};
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    get( token: any, notFoundValue?: any ): any {
       if( token && token.name ) {
@@ -16,6 +22,10 @@ export class WidgetInjector implements Injector {
          if( service ) {
             return service;
          }
+      }
+      const candidates = this.additionalServices.filter( service => service instanceof token );
+      if( candidates.length > 0 ) {
+         return candidates[ 0 ];
       }
       return this.parentInjector.get( token, notFoundValue );
    }

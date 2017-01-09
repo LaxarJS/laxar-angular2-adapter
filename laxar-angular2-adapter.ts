@@ -9,25 +9,32 @@ import {
    BrowserModule,
    __platform_browser_private__ as platformBrowserPrivateApi
 } from '@angular/platform-browser';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { ResourceLoader, platformCoreDynamic } from '@angular/compiler';
 import {
+   COMPILER_OPTIONS,
    ApplicationRef,
    Component,
    ComponentRef,
    ComponentFactoryResolver,
+   createPlatformFactory,
    Injector,
    NgModule,
    NgZone,
-   COMPILER_OPTIONS,
-   createPlatformFactory,
-   Provider
+   Provider,
+   Type
 } from '@angular/core';
-import { AxEventBus, AxAreaHelper, AxContext } from 'laxar-types';
-import { AxWidgetArea } from './lib/directives/widget_area';
 import { ThemeAwareResourceLoader } from './lib/theme_aware_resource_loader';
 import { WidgetInjector } from './lib/widget_injector';
+import { AxWidgetArea } from './lib/directives/widget_area';
+import { AxFeaturesHelper } from './lib/services/ax_features_helper';
 
+// Keeping track of all create adapters of all angular / laxar applications on a page.
+// We need this to identify the correct DOM node for widget elements.
 let adapterCounter = 0;
+// For testing we need a reference to the current platform and are able to destroy it before a new one is
+// created.
+let currentPlatform = null;
 
 export const technology = 'angular2';
 
@@ -64,17 +71,17 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
          heartbeat.registerHeartbeatListener( () => { this.applicationRef.tick(); } );
       }
 
-      registerWidgetComponent( component: any, widgetServices: any ): ComponentRef< any > {
-         let componentRef;
-         this.ngZone.run( () => {
-            const injector = new WidgetInjector( this.rootInjector, widgetServices );
+      registerWidgetComponent( component: Type<any>, widgetServices: any ): ComponentRef< any > {
+         return this.ngZone.run( () => {
+            const featuresHelper = new AxFeaturesHelper( widgetServices.axContext );
+            const injector = new WidgetInjector( this.rootInjector, widgetServices, [ featuresHelper ] );
             const factory = this.resolver.resolveComponentFactory( component );
-            componentRef = factory.create( injector );
+            const componentRef = factory.create( injector );
 
-            this.applicationRef.attachView(componentRef.hostView);
-            componentRef.onDestroy( () => { this.applicationRef.detachView(componentRef.hostView); } );
+            this.applicationRef.attachView( componentRef.hostView );
+            componentRef.onDestroy( () => { this.applicationRef.detachView( componentRef.hostView ); } );
+            return componentRef;
          } );
-         return componentRef;
       }
 
    }
@@ -88,8 +95,7 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       imports: [ BrowserModule, ...modules ],
       entryComponents: components,
       declarations: [ AppRootComponent ],
-      bootstrap: [ AppRootComponent ],
-      providers: [{provide: ResourceLoader, useClass: class L extends ResourceLoader {}}]
+      bootstrap: [ AppRootComponent ]
    } )
    class AppRootModule {
       constructor( private applicationRef: ApplicationRef ) {}
@@ -99,59 +105,57 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
       }
    }
 
-   const bootstrapPromise = createPlatformBrowserDynamic().bootstrapModule( AppRootModule );
+   if( currentPlatform ) {
+      currentPlatform.destroy();
+   }
+   currentPlatform = createLaxarPlatform();
+   const bootstrapPromise = currentPlatform.bootstrapModule( AppRootModule );
 
    return api;
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   function create( { widgetName, anchorElement, services } ) {
+   function create( { widgetName, anchorElement, services, onBeforeControllerCreation } ) {
 
       const provider = artifactProvider.forWidget( widgetName );
-      let componentRef;
 
-      return Promise.all( [ bootstrapPromise, provider.descriptor(), provider.module() ] )
-         .then( setupWidget, err => { window.console.error( err ); } )
-         .then( () => ( {
-            domAttachTo,
-            domDetach,
-            destroy
+      return Promise.all( [ bootstrapPromise, provider.module() ] )
+         .then( ( [ rootModuleInjector, module ] ) => {
+            onBeforeControllerCreation( services );
+            const componentName = kebapToCamelcase( widgetName );
+            return rootModuleInjector.instance.rootComponent()
+               .registerWidgetComponent( module[ componentName ], services );
+         }, err => { window.console.error( err ); } )
+         .then( componentRef => ( {
+
+            domAttachTo( areaElement: HTMLElement ) {
+               // Using cast to any to gain access to internal rootNodes
+               const widgetNode = (componentRef as any).hostView.rootNodes[0];
+
+               anchorElement.appendChild( widgetNode );
+               areaElement.appendChild( anchorElement );
+            },
+
+            domDetach() {
+               const parent = anchorElement.parentNode;
+               if( parent ) {
+                  parent.removeChild( anchorElement );
+               }
+            },
+
+            destroy() {
+               (componentRef as ComponentRef< any >).destroy();
+            }
+
          } ) );
-
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-      function setupWidget( [ rootModuleInjector, descriptor, module ] ) {
-         const componentName = kebapToCamelcase( descriptor.name );
-         componentRef = rootModuleInjector.instance.rootComponent()
-            .registerWidgetComponent( module[ componentName ], services );
-      }
-
-      function domAttachTo( areaElement ) {
-         const widgetNode = componentRef.hostView.rootNodes[0];
-
-         anchorElement.appendChild( widgetNode );
-         areaElement.appendChild( anchorElement );
-      }
-
-      function domDetach() {
-         const parent = anchorElement.parentNode;
-         if( parent ) {
-            parent.removeChild( anchorElement );
-         }
-      }
-
-      function destroy() {
-         componentRef.destroy();
-      }
-
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   function createPlatformBrowserDynamic() {
+   function createLaxarPlatform() {
       const resourceLoader = new ThemeAwareResourceLoader( artifactProvider );
       const platformProviders: Provider[] = [
-         platformBrowserPrivateApi.INTERNAL_BROWSER_PLATFORM_PROVIDERS, {
+         ...platformBrowserPrivateApi.INTERNAL_BROWSER_PLATFORM_PROVIDERS, {
             provide: COMPILER_OPTIONS,
             useValue: {
                providers: [ { provide: ResourceLoader, useValue: resourceLoader } ]
@@ -159,7 +163,7 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
             multi: true
          },
       ];
-      return createPlatformFactory( platformCoreDynamic, 'browserDynamic', platformProviders )();
+      return createPlatformFactory( platformBrowserDynamic, 'laxarWidgets', platformProviders )();
    }
 
 }

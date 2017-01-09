@@ -3,6 +3,11 @@
  * Released under the MIT license.
  * http://laxarjs.org/license
  */
+
+/*
+ * This file defines all Services and APIs provided by these services as Typescript classes.
+ * A widget then may include this file and use the defined types for dependency injection.
+ */
 export class StorageApi {
    getItem( key: string ): any {}
    setItem( key: string, value: any ): void {}
@@ -211,3 +216,4 @@ export class AxVisibility {
 
 export class AxGlobalLog extends AxLog {}
 export class AxGlobalEventBus extends AxEventBus {}
+export { AxFeaturesHelper } from './lib/services/ax_features_helper';

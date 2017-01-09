@@ -1,2 +1,13 @@
-/*.js
-/*.map
+/.idea
+/.grunt
+/node_modules
+/karma-output
+/spec-output
+/bower_components
+/dist
+/ts-out
+/typings
+junit.xml
+npm-debug.log
+test-results.xml
+lcov.info

@@ -10,11 +10,14 @@ import {
 const { ResourceLoaderImpl } = platformBrowserDynamicPrivateApi;
 
 export class ThemeAwareResourceLoader extends ResourceLoaderImpl {
+
    constructor( private artifactProvider: any ) {
       super();
    }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
    get( url: string ): Promise< string > {
-      console.log( 'ResourceLoader called with url: ' + url );
       if( !url.startsWith( 'ax-widget:' ) ) {
          return super.get( url );
       }
@@ -27,4 +30,5 @@ export class ThemeAwareResourceLoader extends ResourceLoaderImpl {
 
       throw new Error( `Unsupported asset type ${type}.` );
    }
+
 }

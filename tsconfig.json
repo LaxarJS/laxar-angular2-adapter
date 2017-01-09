@@ -1,0 +1,28 @@
+{
+   "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "lib": [ "es2015", "dom" ],
+      "noImplicitAny": false,
+      "suppressImplicitAnyIndexErrors": true,
+      "baseUrl": "./",
+      "paths": {
+         "laxar-types": [ "./types" ]
+      },
+      "typeRoots": [
+         "./node_modules/@types/"
+      ],
+      "outDir": "./ts-out"
+   },
+   "compileOnSave": false,
+   "exclude": [
+      "dist",
+      "ts-out",
+      "node_modules",
+      "**/*-aot.ts"
+   ]
+}
