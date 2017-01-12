@@ -10,7 +10,7 @@ export class WidgetInjector implements Injector {
    constructor(
       private parentInjector: Injector,
       private widgetServices: any,
-      private additionalServices: any[] = []
+      private additionalServices: any = {}
    ) {};
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,10 +22,9 @@ export class WidgetInjector implements Injector {
          if( service ) {
             return service;
          }
-      }
-      const candidates = this.additionalServices.filter( service => service instanceof token );
-      if( candidates.length > 0 ) {
-         return candidates[ 0 ];
+         if( token.name in this.additionalServices ) {
+            return this.additionalServices[ token.name ];
+         }
       }
       return this.parentInjector.get( token, notFoundValue );
    }

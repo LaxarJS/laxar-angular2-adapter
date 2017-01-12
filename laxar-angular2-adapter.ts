@@ -73,8 +73,9 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
       registerWidgetComponent( component: Type<any>, widgetServices: any ): ComponentRef< any > {
          return this.ngZone.run( () => {
-            const featuresHelper = new AxFeaturesHelper( widgetServices.axContext );
-            const injector = new WidgetInjector( this.rootInjector, widgetServices, [ featuresHelper ] );
+            const injector = new WidgetInjector( this.rootInjector, widgetServices, {
+               'AxFeaturesHelper': new AxFeaturesHelper( widgetServices.axContext )
+            } );
             const factory = this.resolver.resolveComponentFactory( component );
             const componentRef = factory.create( injector );
 

@@ -31,6 +31,8 @@ function distConfig() {
 
    config.externals = {
       'laxar': 'laxar',
+      'reflect-metadata': 'reflect-metadata',
+      'zone.js': 'zone.js',
       '@angular/compiler': '@angular/compiler',
       '@angular/core': '@angular/core',
       '@angular/platform-browser': '@angular/platform-browser'
