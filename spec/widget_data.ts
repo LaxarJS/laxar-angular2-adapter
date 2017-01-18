@@ -4,7 +4,7 @@
  * http://laxarjs.org/license
  */
 import { Component, NgModule, OnDestroy } from '@angular/core';
-import { AxEventBus } from 'laxar-types';
+import { AxEventBus } from '../lib/types';
 
 
 export const descriptor = {

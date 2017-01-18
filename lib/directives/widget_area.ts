@@ -4,7 +4,7 @@
  * http://laxarjs.org/license
  */
 import { Directive, ElementRef, Input, OnInit } from '@angular/core';
-import { AxAreaHelper } from 'laxar-types';
+import { AxAreaHelper } from '../types';
 
 @Directive( {
    selector: '[axWidgetArea]'

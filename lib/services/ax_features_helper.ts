@@ -5,7 +5,7 @@
  */
 import { object } from 'laxar';
 import { Injectable } from '@angular/core';
-import { AxContext } from 'laxar-types';
+import { AxContext } from '../types';
 
 @Injectable()
 export class AxFeaturesHelper {

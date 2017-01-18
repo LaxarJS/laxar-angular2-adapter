@@ -2,7 +2,7 @@
   "name": "laxar-angular2-adapter",
   "version": "0.1.0-pre",
   "description": "Write LaxarJS widgets and controls using Angular 2",
-  "main": "laxar-angular2-adapter",
+  "main": "dist/laxar-angular2-adapter",
   "scripts": {
     "test": "grunt karma && npm run eslint",
     "prepublish": "webpack",
@@ -20,12 +20,12 @@
     "@angular/core": "~2.4.1",
     "@angular/platform-browser": "~2.4.1",
     "@angular/platform-browser-dynamic": "~2.4.1",
-    "@types/jasmine": "^2.5.40",
-    "core-js": "^2.4.1",
-    "reflect-metadata": "^0.1.8",
+    "@types/jasmine": "~2.5.40",
+    "core-js": "~2.4.1",
+    "reflect-metadata": "~0.1.8",
     "rxjs": "~5.0.3",
-    "zone.js": "^0.7.2",
-    "laxar": "^2.0.0-alpha.10"
+    "zone.js": "~0.7.5",
+    "laxar": "~2.0.0-alpha.10"
   },
   "devDependencies": {
     "@angular/common": "~2.4.1",
@@ -61,7 +61,7 @@
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1",
     "webpack-jasmine-html-runner-plugin": "~0.5.0",
-    "zone.js": "^0.7.2"
+    "zone.js": "0.7.4"
   },
   "keywords": [
     "LaxarJS",

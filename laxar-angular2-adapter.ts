@@ -22,10 +22,11 @@ import {
    NgModule,
    NgZone,
    Provider,
+   ReflectiveInjector,
    Type
 } from '@angular/core';
 import { ThemeAwareResourceLoader } from './lib/theme_aware_resource_loader';
-import { WidgetInjector } from './lib/widget_injector';
+import { providersForServices } from './lib/types';
 import { AxWidgetArea } from './lib/directives/widget_area';
 import { AxFeaturesHelper } from './lib/services/ax_features_helper';
 
@@ -73,15 +74,25 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
       registerWidgetComponent( component: Type<any>, widgetServices: any ): ComponentRef< any > {
          return this.ngZone.run( () => {
-            const injector = new WidgetInjector( this.rootInjector, widgetServices, {
-               'AxFeaturesHelper': new AxFeaturesHelper( widgetServices.axContext )
-            } );
+            const injector = ReflectiveInjector.fromResolvedProviders(
+               [ ...providersForServices( widgetServices ), ...additionalServices() ],
+               this.rootInjector
+            );
             const factory = this.resolver.resolveComponentFactory( component );
             const componentRef = factory.create( injector );
 
             this.applicationRef.attachView( componentRef.hostView );
             componentRef.onDestroy( () => { this.applicationRef.detachView( componentRef.hostView ); } );
             return componentRef;
+
+            function additionalServices() {
+               return ReflectiveInjector.resolve( [
+                  {
+                     provide: AxFeaturesHelper,
+                     useFactory: () => new AxFeaturesHelper( widgetServices.axContext )
+                  }
+               ] );
+            }
          } );
       }
 
@@ -184,3 +195,4 @@ function kebapToCamelcase( str ) {
    exports: [ AxWidgetArea ]
 } )
 export class AxAngularModule {}
+export * from './lib/types';

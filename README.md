@@ -18,7 +18,7 @@ npm install --save laxar-angular2-adapter
 - webpack bundle stuff ...
 
 This will automatically install Angular 2 and all necessary peer dependencies (libraries and shims).
-Load the Angular adapter module (`laxar-angular2-adapter.ts`) into your project and pass it to `laxar.bootstrap`.
+Load the Angular adapter module (`laxar-angular2-adapter`) into your project and pass it to `laxar.bootstrap`.
 
 Make sure to have the following mappings in your module loader configuration (e.g. `resolve.alias` for webpack, `path` for RequireJS):
 
@@ -71,6 +71,16 @@ Feel free to provide a "real" path here, if you don't want to use this mechanism
 
 ### Testing with LaxarJS Mocks
 
-## Why Angular 2 (and not Angular or Angular X)?
+## Why the technology identifier `angular2` (and not `angular` or `angularx` or whatever)?
 
-That's a good question!
+One goal of LaxarJS is to give developers the choice of the framework or library used for the rendering part of a widget.
+Starting from AngularJS 1, LaxarJS now supports many more technologies like VueJS or React.
+With the announcement of Angular 2 we very early decided to try to support this new version alongside of the former Angular 1.x releases.
+
+So how should we name this technology when referenced in the widget descriptor file?
+If we would have chosen `angular`, than the installed version of the adapter would have made the difference of the supported version.
+Major changes in the adapter API would have not been possible since the major version number would have been tied to the major version of AngularJS.
+Additionally only one version could be used at a time.
+So this would be no option.
+Building the support for both version into one adapter under one version (if at all possible) would have lead to very unmaintainable code.
+Since the current AngularJS version is widely known as Angular 2 and was developed under that name, we just decided to go with `angular2`.

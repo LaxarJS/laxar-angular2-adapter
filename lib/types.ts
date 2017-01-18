@@ -8,6 +8,28 @@
  * This file defines all Services and APIs provided by these services as Typescript classes.
  * A widget then may include this file and use the defined types for dependency injection.
  */
+import { ReflectiveInjector, ResolvedReflectiveProvider } from '@angular/core';
+
+class ServiceRegistry {
+
+   private types = [];
+   private names = [];
+
+   set( type: any, name: string ): void {
+      this.types.push( type );
+      this.names.push( name );
+   }
+
+   providers( widgetServices: any ): ResolvedReflectiveProvider[] {
+      return ReflectiveInjector.resolve( this.types.map( ( type, index ) => ({
+         provide: type,
+         useFactory: () => widgetServices[ this.names[ index ] ]
+      }) ) );
+   }
+};
+const serviceRegistry = new ServiceRegistry();
+export const providersForServices = _ => serviceRegistry.providers( _ );
+
 export class StorageApi {
    getItem( key: string ): any {}
    setItem( key: string, value: any ): void {}
@@ -39,6 +61,7 @@ export class AxAreaHelper {
    }
    register( localAreaName: string, element: HTMLElement ): void {}
 }
+serviceRegistry.set( AxAreaHelper, 'axAreaHelper' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +76,7 @@ export class AxAssets extends Function {
       return Promise.resolve( '' );
    }
 }
+serviceRegistry.set( AxAssets, 'axAssets' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +84,7 @@ export class AxConfiguration {
    get( key: string, fallback?: any ): any {}
    ensure( key: string ): any {}
 }
+serviceRegistry.set( AxConfiguration, 'axConfiguration' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +95,7 @@ export class AxContext {
    public log: AxLog;
    public widget: Object;
 }
+serviceRegistry.set( AxContext, 'axContext' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +105,7 @@ export class AxControls {
    }
    provide( controlRef: string ): any {}
 }
+serviceRegistry.set( AxControls, 'axControls' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +122,7 @@ export class AxEventBus {
    addInspector( inspector: (any) => void ) {
    }
 }
+serviceRegistry.set( AxEventBus, 'axEventBus' );
 
 export class AxEventMeta {
    public cycleId: string;
@@ -111,6 +139,7 @@ export class AxFlowService {
       return '';
    }
 }
+serviceRegistry.set( AxFlowService, 'axFlowService' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -128,6 +157,7 @@ export class AxGlobalStorage {
       return null;
    }
 }
+serviceRegistry.set( AxGlobalStorage, 'axGlobalStorage' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -139,6 +169,7 @@ export class AxHeartbeat {
    onBeforeNext( func: Function ): void {}
    onAfterNext( func: Function ): void {}
 }
+serviceRegistry.set( AxHeartbeat, 'axHeartbeat' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,10 +178,12 @@ export class AxI18n extends AxI18nHandler {
       return null;
    }
 }
+serviceRegistry.set( AxI18n, 'axI18n' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export type AxId = ( localId: string ) => string;
+export class AxId {}
+serviceRegistry.set( AxId, 'axId' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -172,6 +205,7 @@ export class AxLog {
    }
    setLogThreshold( threshold: number|string ): void {}
 }
+serviceRegistry.set( AxLog, 'axLog' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -179,12 +213,14 @@ export class AxStorage {
    public local: StorageApi;
    public session: StorageApi;
 }
+serviceRegistry.set( AxStorage, 'axStorage' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export class AxTooling {
    public pages: any;
 }
+serviceRegistry.set( AxTooling, 'axTooling' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -211,9 +247,13 @@ export class AxVisibility {
       return this;
    }
 }
+serviceRegistry.set( AxVisibility, 'axVisibility' );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export class AxGlobalLog extends AxLog {}
+serviceRegistry.set( AxGlobalLog, 'axGlobalLog' );
 export class AxGlobalEventBus extends AxEventBus {}
-export { AxFeaturesHelper } from './lib/services/ax_features_helper';
+serviceRegistry.set( AxGlobalEventBus, 'axGlobalEventBus' );
+
+export { AxFeaturesHelper } from './services/ax_features_helper';

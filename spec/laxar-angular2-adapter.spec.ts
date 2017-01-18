@@ -6,7 +6,7 @@
 import { bootstrap, technology } from '../laxar-angular2-adapter';
 import * as widgetData from './widget_data';
 import { create as createArtifactProviderMock, MOCK_THEME } from 'laxar/lib/testing/artifact_provider_mock';
-import {enableProdMode} from '@angular/core';
+import { enableProdMode } from '@angular/core';
 
 // prevent console output during test runs
 enableProdMode();

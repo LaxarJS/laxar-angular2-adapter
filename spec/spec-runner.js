@@ -3,5 +3,5 @@
  * Released under the MIT license.
  * http://laxarjs.org/license
  */
-import 'core-js/client/shim.min.js';
-import './laxar-angular2-adapter.spec.ts';
+import '../test-support';
+import './laxar-angular2-adapter.spec';
