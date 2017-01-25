@@ -25,7 +25,7 @@
     "reflect-metadata": "~0.1.8",
     "rxjs": "~5.0.3",
     "zone.js": "~0.7.5",
-    "laxar": "~2.0.0-alpha.10"
+    "laxar": "^2.0.0-alpha.14"
   },
   "devDependencies": {
     "@angular/common": "~2.4.1",

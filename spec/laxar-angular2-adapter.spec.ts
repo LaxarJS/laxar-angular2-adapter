@@ -35,7 +35,7 @@ describe( 'An Angular 2 widget adapter factory', () => {
    let environment;
    let factory;
    let heartbeatMock;
-   let onBeforeControllerCreation;
+   let provideServices;
 
    beforeEach( () => {
       heartbeatMock = jasmine.createSpyObj( 'heartbeatMock', [ 'registerHeartbeatListener' ] );
@@ -60,11 +60,11 @@ describe( 'An Angular 2 widget adapter factory', () => {
          document.createElement( 'div' )
       );
       anchorElement = document.createElement( 'div' );
-      onBeforeControllerCreation = jasmine.createSpy( 'onBeforeControllerCreation' );
+      provideServices = jasmine.createSpy( 'provideServices' );
       environment = {
          widgetName: widgetData.descriptor.name,
          anchorElement,
-         onBeforeControllerCreation,
+         provideServices,
          services: {
             axContext: context,
             axEventBus: context.eventBus,
@@ -87,14 +87,14 @@ describe( 'An Angular 2 widget adapter factory', () => {
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      it( 'called the constructor of the component', () => {
+      it( 'calls the constructor of the component', () => {
          expect( widgetData.widgetSpies.constructor ).toHaveBeenCalled();
       } );
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      it( 'called the onBeforeControllerCreation hook with the injected widget services', () => {
-         expect( onBeforeControllerCreation ).toHaveBeenCalledWith( environment.services );
+      it( 'calls the provideServices hook with the injected widget services', () => {
+         expect( provideServices ).toHaveBeenCalledWith( environment.services );
       } );
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////

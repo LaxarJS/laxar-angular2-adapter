@@ -127,13 +127,13 @@ export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat 
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   function create( { widgetName, anchorElement, services, onBeforeControllerCreation } ) {
+   function create( { widgetName, anchorElement, services, provideServices } ) {
 
       const provider = artifactProvider.forWidget( widgetName );
 
       return Promise.all( [ bootstrapPromise, provider.module() ] )
          .then( ( [ rootModuleInjector, module ] ) => {
-            onBeforeControllerCreation( services );
+            provideServices( services );
             const componentName = kebapToCamelcase( widgetName );
             return rootModuleInjector.instance.rootComponent()
                .registerWidgetComponent( module[ componentName ], services );
