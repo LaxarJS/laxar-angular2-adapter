@@ -115,14 +115,13 @@ Within its template the directive defined by the control can now be used just as
 ### Testing with LaxarJS Mocks
 
 Testing with LaxarJS Mocks mostly works just as for any other technology.
-The only thing that needs to be loaded are testing shims for zone.js.
+The only thing that needs to be loaded are testing shims for zone.js and some new JavaScript APIs (see [Browser Support](#browser-support))
 These shims are already composed in `test-support.ts` in the angular2 adapter.
 So a basic setup would look like this:
 
 ```js
 import 'laxar-angular2-adapter/test-support';
 import * as axMocks from 'laxar-mocks';
-import 'laxar/polyfills';
 
 describe( 'An ng2-test-widget', () => {
 
@@ -153,12 +152,14 @@ describe( 'An ng2-test-widget', () => {
 
 Angular 2 makes heavy use of bleeding edge browser features, that are no standard yet or are just being implemented in browsers.
 This may make it necessary to include some shims.
-For example Internet Explorer 10 will need the `core-js` shims both in the application and in tests.
-Simply add the dependency to your project via yarn or npm (we tested with version 2.4.1) and include it at the top of your projects main file (by default `init.js`) and at the top of each widget spec:
+For example Internet Explorer 10 will need the `core-js` shim additionally in the application.
+Simply add the dependency to your project via yarn or npm (we tested with version 2.4.1) and include it at the top of your projects main file (by default this is the file `init.js`):
 
 ```js
 import 'core-js/client/shim.min.js';
 ```
+
+For widget specs the `test-support.ts` file of the adapter already includes this shim.
 
 
 ## Why the technology identifier `angular2` (and not `angular` or `angularx` or whatever)?

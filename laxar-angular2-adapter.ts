@@ -3,6 +3,8 @@
  * Released under the MIT license.
  * http://laxarjs.org/license
  */
+// TODO we need to integrate ts linting support for ts files somehow
+/* eslint-disable */
 import 'reflect-metadata';
 import 'zone.js';
 import {

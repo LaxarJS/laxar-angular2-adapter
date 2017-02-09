@@ -5,7 +5,7 @@
  */
 /* eslint-env node */
 
-const webpackConfig = Object.assign( {}, require('./webpack.base.config' ) );
+const webpackConfig = Object.assign( {}, require('./webpack.config' ) );
 delete webpackConfig.entry;
 webpackConfig.devtool = 'inline-source-map';
 
