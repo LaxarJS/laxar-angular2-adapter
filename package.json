@@ -2,7 +2,8 @@
   "name": "laxar-angular2-adapter",
   "version": "0.1.0-pre",
   "description": "Write LaxarJS widgets and controls using Angular 2",
-  "main": "dist/laxar-angular2-adapter",
+  "browser": "dist/laxar-angular2-adapter",
+  "main": "laxar-angular2-adapter",
   "scripts": {
     "test": "grunt karma && npm run eslint",
     "prepublish": "webpack",
