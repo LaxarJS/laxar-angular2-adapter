@@ -1,6 +1,6 @@
 {
   "name": "laxar-angular2-adapter",
-  "version": "0.1.0-pre",
+  "version": "2.0.0-alpha.0",
   "description": "Write LaxarJS widgets and controls using Angular 2",
   "browser": "dist/laxar-angular2-adapter",
   "main": "laxar-angular2-adapter",
