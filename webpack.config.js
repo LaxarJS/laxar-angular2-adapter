@@ -6,25 +6,13 @@
 /* eslint-env node */
 
 const path = require( 'path' );
-const webpack = require( 'webpack' );
 
 const nodeEnv = process.env.NODE_ENV;
-const isProduction = nodeEnv === 'production';
 const isBrowserSpec = nodeEnv === 'browser-spec';
-
-const name = require( './package.json' ).name;
-const externals = {
-   'laxar': 'laxar',
-   'reflect-metadata': 'reflect-metadata',
-   'zone.js': 'zone.js',
-   '@angular/compiler': '@angular/compiler',
-   '@angular/core': '@angular/core',
-   '@angular/platform-browser': '@angular/platform-browser'
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const baseConfig = {
+const config = {
    context: __dirname,
    module: {
       rules: [
@@ -35,7 +23,6 @@ const baseConfig = {
          },
          {
             test: /\.tsx?$/,
-            exclude: /node_modules/,
             loader: 'ts-loader'
          }
       ]
@@ -48,7 +35,6 @@ const baseConfig = {
    }
 };
 
-const config = isProduction ? distConfig() : baseConfig;
 
 if( isBrowserSpec ) {
    const WebpackJasmineHtmlRunnerPlugin = require( 'webpack-jasmine-html-runner-plugin' );
@@ -65,52 +51,3 @@ if( isBrowserSpec ) {
 }
 
 module.exports = config;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function distConfig() {
-
-   return [
-      distConfigItem( `./${name}.ts`, `./${name}.js` ),
-      distConfigItem( `./${name}.ts`, `./${name}.min.js`, { minify: true } )
-   ];
-
-   function distConfigItem( entry, output, optionalOptions ) {
-      const options = Object.assign( {
-         minify: false,
-         externals
-      }, optionalOptions || {} );
-
-      const config = Object.assign( {}, baseConfig );
-
-      config.entry = entry;
-
-      config.output = {
-         path: path.resolve( __dirname ),
-         filename: `dist/${output}`,
-         library: name,
-         libraryTarget: 'umd',
-         umdNamedDefine: true
-      };
-
-      config.externals = options.externals;
-
-      config.plugins = [
-         new webpack.SourceMapDevToolPlugin( {
-            filename: `dist/${output}.map`
-         } )
-      ];
-
-      if( options.minify ) {
-         config.plugins.push(
-            new webpack.optimize.UglifyJsPlugin( {
-               compress: { warnings: false },
-               sourceMap: true
-            } )
-         );
-      }
-
-      return config;
-   }
-
-}

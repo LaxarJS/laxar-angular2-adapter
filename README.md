@@ -7,9 +7,12 @@
 
 Note: These instructions only work for LaxarJS v2.
 
-
 ```sh
+# Using npm
 npm install --save laxar-angular2-adapter
+
+# Using yarn
+yarn add laxar-angular2-adapter
 ```
 
 This will automatically install Angular 2 and all necessary peer dependencies (libraries and shims).
@@ -24,6 +27,73 @@ bootstrap( document.querySelector( '[data-ax-page]' ), {
    artifacts: { ... }
 } );
 ```
+
+Since the Angular 2 adapter is not available as pre-built version and since widgets most probably will need a Typescript compiler anyways, some more setup steps are necessary.
+
+First of all you'll need a `tsconfig.json` in your project, that configures the Typescript compiler.
+Below is a basic version we used to implement this adapter, but feel free to change settings, if your more comfortable with Typescript and its compiler options.
+
+```json
+{
+   "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "lib": [ "es2015", "dom" ],
+      "noImplicitAny": false,
+      "suppressImplicitAnyIndexErrors": true,
+      "baseUrl": "./",
+      "typeRoots": [
+         "./node_modules/@types/"
+      ]
+   },
+   "compileOnSave": false,
+   "exclude": [
+      "**/bower_components/*",
+      "**/node_modules/*",
+      "**/*-aot.ts"
+   ]
+}
+```
+
+Then you need to add webpack support for Typescript.
+This means you'll now need to install the actual compiler, but also a Typescript loader for webpack.
+There some different flavors of compilers and loaders for Typescript available, but we chose to go with the common ones.
+Add these to your project.
+```sh
+#Using npm
+npm install --save-dev typescript ts-loader
+
+# Using yarn
+yarn add --dev typescript ts-loader
+```
+
+Finally include support for Typescript in your `webpack.config.js`.
+Below is a very simple example, showing only the modified parts:
+```js
+config = {
+
+   resolve: {
+      // Here we add support for Typescript file extensions
+      extensions: [ '.js', '.jsx', '.ts', '.tsx' ],
+   },
+
+   module: {
+      rules: [
+         // And here we add the loader rule for these extensions
+         {
+            test: /\.tsx?$/,
+            loader: 'ts-loader'
+         }
+      ]
+   }
+};
+```
+
+That's it.
 
 ## Usage
 

@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+- [#3](https://github.com/LaxarJS/laxar-angular2-adapter/issues/3): removed dist version support
+
 
 ## v2.0.0-alpha.0"
 
