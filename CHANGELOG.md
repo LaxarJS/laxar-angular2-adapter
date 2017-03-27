@@ -2,6 +2,7 @@
 
 ## Last Changes
 
+- [#4](https://github.com/LaxarJS/laxar-angular2-adapter/issues/4): removed obsolete adapter-wide anchor element parameter
 - [#3](https://github.com/LaxarJS/laxar-angular2-adapter/issues/3): removed dist version support
 
 

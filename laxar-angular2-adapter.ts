@@ -39,7 +39,7 @@ let currentPlatform = null;
 
 export const technology = 'angular2';
 
-export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat }, applicationElement ) {
+export function bootstrap( { widgets, controls }, { artifactProvider, heartbeat } ) {
 
    // Implementation of this adapter is heavily inspired by these:
    // - https://github.com/angular/angular/issues/9293#issuecomment-261329089
