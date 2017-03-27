@@ -56,8 +56,7 @@ describe( 'An Angular 2 widget adapter factory', () => {
       artifacts = { widgets: [ widgetData ], controls: [] };
       factory = bootstrap(
          artifacts,
-         { artifactProvider: artifactProviderMock, heartbeat: heartbeatMock },
-         document.createElement( 'div' )
+         { artifactProvider: artifactProviderMock, heartbeat: heartbeatMock }
       );
       anchorElement = document.createElement( 'div' );
       provideServices = jasmine.createSpy( 'provideServices' );
