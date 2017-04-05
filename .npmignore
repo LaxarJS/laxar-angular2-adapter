@@ -2,4 +2,5 @@
 /.grunt
 /karma-output
 spec/
+**/spec/
 spec-output/
