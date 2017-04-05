@@ -1,6 +1,6 @@
 /.idea
 /.grunt
 /karma-output
-spec/
+spec/ 
 **/spec/
 spec-output/

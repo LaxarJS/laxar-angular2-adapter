@@ -2,6 +2,7 @@
 
 ## Last Changes
 
+## v2.0.0-alpha.3
 ## v2.0.0-alpha.2
 
 - [#6](https://github.com/LaxarJS/laxar-angular2-adapter/issues/6): added .npmignore with `spec` folders
