@@ -28,10 +28,10 @@ bootstrap( document.querySelector( '[data-ax-page]' ), {
 } );
 ```
 
-Since the Angular 2 adapter is not available as pre-built version and since widgets most probably will need a Typescript compiler anyways, some more setup steps are necessary.
-
-First of all you'll need a `tsconfig.json` in your project, that configures the Typescript compiler.
-Below is a basic version we used to implement this adapter, but feel free to change settings, if your more comfortable with Typescript and its compiler options.
+The Angular 2 adapter is not available as pre-built version, which means that Typescript support will need to be added to your project.
+Since `"angular2"` widgets most probably will need a Typescript compiler anyways, additional setup steps are necessary.
+First of all you'll need a `tsconfig.json` in your project that configures the Typescript compiler.
+Below is a basic version we used to implement this adapter, but feel free to change settings if you are more comfortable with Typescript and its compiler options.
 
 ```json
 {
