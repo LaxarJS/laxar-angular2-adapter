@@ -1,9 +1,6 @@
 /.idea
-/.grunt
 /node_modules
 /karma-output
-/spec-output
-/bower_components
 /dist
 /ts-out
 /typings

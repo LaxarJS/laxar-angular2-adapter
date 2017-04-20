@@ -2,6 +2,7 @@
 
 ## Last Changes
 
+- [#4](https://github.com/LaxarJS/laxar-angular2-adapter/issues/4): fixed tests, used laxar-infrastructure, polished README.md
 - [#7](https://github.com/LaxarJS/laxar-angular2-adapter/issues/7): added Travis-CI support
 
 

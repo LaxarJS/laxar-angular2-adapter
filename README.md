@@ -2,36 +2,34 @@
 
 > Write LaxarJS widgets and controls using Angular 2
 
+This technology adapter integrates widgets and controls created using Angular 2 into [LaxarJS](https://laxarjs.org) applications, by implementing the integration technology `"angular2"` (skip to the end for a short discussion of the technology identifier).
+
 
 ## Installation
 
 Note: These instructions only work for LaxarJS v2.
 
 ```sh
-# Using npm
 npm install --save laxar-angular2-adapter
-
-# Using yarn
-yarn add laxar-angular2-adapter
 ```
 
 This will automatically install Angular 2 and all necessary peer dependencies (libraries and shims).
-Load the Angular adapter module (`laxar-angular2-adapter`) into your project and pass it to `laxar.bootstrap`:
+Load the Angular adapter module (`laxar-angular2-adapter`) into your project and pass it to `laxar.create`:
 
 ```js
+import { create } from 'laxar';
 import * as angular2Adapter from 'laxar-angular2-adapter';
-
-bootstrap( document.querySelector( '[data-ax-page]' ), {
-   widgetAdapters: [ angular2Adapter /* possibly more adapters */ ],
-   configuration: { ... },
-   artifacts: { ... }
-} );
+import artifacts from 'laxar-loader/artifacts?flow=main&theme=default';
+const configuration = { /* ... */ };
+create( [ angular2Adapter /* , ... */ ], artifacts, configuration )
+   .flow( /* ... name, element ... */ )
+   .bootstrap();
 ```
 
-Since the Angular 2 adapter is not available as pre-built version and since widgets most probably will need a Typescript compiler anyways, some more setup steps are necessary.
-
-First of all you'll need a `tsconfig.json` in your project, that configures the Typescript compiler.
-Below is a basic version we used to implement this adapter, but feel free to change settings, if your more comfortable with Typescript and its compiler options.
+The Angular 2 adapter is not available as pre-built version, which means that Typescript support will need to be added to your project.
+Since `"angular2"` widgets most probably will need a Typescript compiler anyways, additional setup steps are necessary.
+First of all you'll need a `tsconfig.json` in your project that configures the Typescript compiler.
+Below is a basic version we used to implement this adapter, but feel free to change settings if you are more comfortable with Typescript and its compiler options.
 
 ```json
 {
@@ -60,15 +58,12 @@ Below is a basic version we used to implement this adapter, but feel free to cha
 ```
 
 Then you need to add webpack support for Typescript.
-This means you'll now need to install the actual compiler, but also a Typescript loader for webpack.
+This means you'll need the actual compiler as well as a Typescript loader for webpack.
 There some different flavors of compilers and loaders for Typescript available, but we chose to go with the common ones.
-Add these to your project.
-```sh
-#Using npm
-npm install --save-dev typescript ts-loader
+Add these to your project:
 
-# Using yarn
-yarn add --dev typescript ts-loader
+```console
+npm install --save-dev typescript ts-loader
 ```
 
 Finally include support for Typescript in your `webpack.config.js`.
@@ -95,13 +90,14 @@ config = {
 
 That's it.
 
+
 ## Usage
 
 With the adapter in place, you can now write widgets and controls using Angular 2.
-The LaxarJS Yeoman generator can create simple widgets and controls with the integration technology _"angular2"_.
-Continue reading for details.
+The [LaxarJS Yeoman generator](https://laxarjs.org/docs/generator-laxarjs2-v2-latest/) can create simple widgets and controls for the integration technology _"angular2"_.
 
-## Creating an Angular 2 widget
+
+## Creating an Angular 2 Widget
 
 You can use the LaxarJS generator for Yeoman to create an _Angular 2_ widget by selecting _"angular2"_ as _integration technology_.
 The new widget has a `.ts` file with a simple widget component and a module declaring that component.
@@ -137,13 +133,14 @@ If this template url is present, the HTML file under the correct theme folder wi
 Feel free to provide a "real" path here or even use an embedded template string, if you don't want to use this mechanism.
 
 
-### Creating and using an Angular 2 control
+### Creating and using an Angular 2 Control
 
 Control support for Angular 2 in LaxarJS is limited to loading the correctly themed stylesheet of the control for you.
-To be able to use a control (the module and all assets defined for that module) in a widget, you need to import its implementation in the widget and add the according dependencies to the module definition of the widget.
-For simplicity we recommend to define and export a module from your control source file and add that as import to your widget module.
+To be able to use a control (an Angular module and all assets defined for that module) in a widget, you need to import its implementation in the widget and add the corresponding dependencies to the Angular module definition of the widget.
+For simplicity, we recommend to define and export a module from your control source file and add that as an import to your widget module.
 
 So let's assume the following exemplary control, only defining a directive that modifies the text color of element it is used on:
+
 ```typescript
 import { Directive, ElementRef, NgModule } from '@angular/core';
 
@@ -184,8 +181,8 @@ Within its template the directive defined by the control can now be used just as
 
 ### Testing with LaxarJS Mocks
 
-Testing with LaxarJS Mocks mostly works just as for any other technology.
-The only thing that needs to be loaded are testing shims for zone.js and some new JavaScript APIs (see [Browser Support](#browser-support))
+Mostly, testing with LaxarJS Mocks works just as for any other technology.
+The only thing that needs to be loaded are testing shims for _zone.js_ and some new JavaScript APIs (see [Browser Support](#browser-support))
 These shims are already composed in `test-support.ts` in the angular2 adapter.
 So a basic setup would look like this:
 
@@ -220,28 +217,29 @@ describe( 'An ng2-test-widget', () => {
 
 ## Browser Support
 
-Angular 2 makes heavy use of bleeding edge browser features, that are no standard yet or are just being implemented in browsers.
+Angular 2 makes heavy use of bleeding edge browser features that are no standard yet or are just being implemented in browsers.
 This may make it necessary to include some shims.
-For example Internet Explorer 10 will need the `core-js` shim additionally in the application.
-Simply add the dependency to your project via yarn or npm (we tested with version 2.4.1) and include it at the top of your projects main file (by default this is the file `init.js`):
+For example Internet Explorer 10 will need the `core-js` shim in the application.
+Add the dependency to your project (we tested with version 2.4.1) and include it at the top of your projects main file (by default this is the file `init.js`):
 
 ```js
 import 'core-js/client/shim.min.js';
 ```
 
-For widget specs the `test-support.ts` file of the adapter already includes this shim.
+For widget specs, the `test-support.ts` file of the adapter already includes this shim.
 
 
 ## Why the technology identifier `angular2` (and not `angular` or `angularx` or whatever)?
 
 One goal of LaxarJS is to give developers the choice of the framework or library used for the rendering part of a widget.
-Starting from AngularJS 1, LaxarJS now supports many more technologies like VueJS or React.
+Starting from AngularJS 1, LaxarJS now supports many more technologies like Vue.js or React.
 With the announcement of Angular 2 we very early decided to try to support this new version alongside of the former Angular 1.x releases.
 
 So how should we name this technology when referenced in the widget descriptor file?
 If we would have chosen `angular`, than the installed version of the adapter would have made the difference of the supported version.
 Major changes in the adapter API would have not been possible since the major version number would have been tied to the major version of AngularJS.
-Additionally only one version could be used at a time.
+Additionally only one version of Angular could be used at a time.
 So this would be no option.
-Building the support for both version into one adapter under one version (if at all possible) would have lead to very unmaintainable code.
+
+Building the support for both versions into one adapter under one version (if at all possible) would have lead to very unmaintainable code and bloated applications.
 Since the current AngularJS version is widely known as Angular 2 and was developed under that name, we just decided to go with `angular2`.
