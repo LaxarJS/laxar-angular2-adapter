@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+- [#7](https://github.com/LaxarJS/laxar-angular2-adapter/issues/7): added Travis-CI support
+
+
 ## v2.0.0-alpha.3
 ## v2.0.0-alpha.2
 
