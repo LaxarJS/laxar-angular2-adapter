@@ -6,19 +6,20 @@
 /* eslint-env node */
 
 const path = require( 'path' );
+const pkg = require( './package.json' );
 
-const nodeEnv = process.env.NODE_ENV;
-const isBrowserSpec = nodeEnv === 'browser-spec';
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-const config = {
+const webpack = require( 'laxar-infrastructure' ).webpack( {
    context: __dirname,
    module: {
       rules: [
          {
             test: /\.js$/,
-            exclude: /node_modules\/(?!laxar)/,
+            include: [
+               path.resolve( __dirname, pkg.main ),
+               path.resolve( __dirname, 'lib/' ),
+               path.resolve( __dirname, 'spec/' ),
+               path.resolve( __dirname, 'node_modules/laxar/' )
+            ],
             loader: 'babel-loader'
          },
          {
@@ -33,21 +34,11 @@ const config = {
    entry: {
       'laxar-angular2-adapter': './laxar-angular2-adapter.ts'
    }
-};
+} );
 
-
-if( isBrowserSpec ) {
-   const WebpackJasmineHtmlRunnerPlugin = require( 'webpack-jasmine-html-runner-plugin' );
-   config.entry = WebpackJasmineHtmlRunnerPlugin.entry(
+module.exports = [
+   webpack.browserSpec( [
       './spec/spec-runner.js',
-      './lib/*/spec/spec-runner.js'
-   );
-   config.plugins = [ new WebpackJasmineHtmlRunnerPlugin() ];
-   config.output = {
-      path: path.resolve( path.join( process.cwd(), 'spec-output' ) ),
-      publicPath: '/spec-output/',
-      filename: '[name].bundle.js'
-   };
-}
-
-module.exports = config;
+      './lib/directives/spec/spec-runner.js'
+   ] )
+];
