@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+- [#9](https://github.com/LaxarJS/laxar-angular2-adapter/issues/9): fixed typescript version
+
 
 ## v2.0.0
 ## v2.0.0-rc.1
